@@ -1,23 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Globalization;
 using System.Windows.Forms;
+using HasherV2._0.Properties;
 
 namespace HasherV2._0
 {
     public partial class MainForm : Form
     {
-        Hasher hasher;
+        Hasher _hasher;
+        DeHasher _deHasher;
 
-        HelpDialog helpDialog;
-        Dialog dialog;
+        HelpDialog _helpDialog;
+        Dialog _dialog;
 
-        String fileName;
+        String _fileName;
 
         public MainForm()
         {
@@ -26,13 +23,14 @@ namespace HasherV2._0
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            hasher = new Hasher();
-            helpDialog = new HelpDialog();
-            dialog = new Dialog();
+            _hasher = new Hasher();
+            _deHasher = new DeHasher();
+            _helpDialog = new HelpDialog();
+            _dialog = new Dialog();
 
-            textBox1.Text = "Hash Key or Input Text";
-            textBox2.Text = "Length";
-            textBox3.Text = "Known Letters";
+            textBox1.Text = Resources.MainForm_Form1_Load_Hash_Key_or_Input_Text;
+            textBox2.Text = Resources.MainForm_Form1_Load_Length;
+            textBox3.Text = Resources.MainForm_Form1_Load_Known_Letters;
 
             textBox2.Enabled = false;
             textBox3.Enabled = false;
@@ -42,35 +40,18 @@ namespace HasherV2._0
 
         private void button1_Click(object sender, EventArgs e)
         {
-            helpDialog.Open("Help","If you know some of the characters put them here in \nthe correct order anthing you don't know just leave an 'a' there.");
+            _helpDialog.Open("Help","If you know some of the characters put them here in \nthe correct order anthing you don't know just leave an 'a' there.");
         }
 
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
-            if(!textBox3.Enabled){
-                textBox3.Enabled = true;
-            }
-            else
-            {
-                textBox3.Enabled = false;
-            }
-        }
-
-        private void radioButton1_CheckedChanged(object sender, EventArgs e)
-        {
-
-        }
-        private void radioButton2_CheckedChanged(object sender, EventArgs e)
-        {
-
+            textBox3.Enabled = !textBox3.Enabled;
         }
 
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
             textBox2.Enabled = true;
-            if(radioButton1.Checked || radioButton2.Checked){
-                button2.Enabled = true;
-            }
+            button2.Enabled = true;
         }
 
         private void openFileDialog1_FileOk(object sender, CancelEventArgs e)
@@ -86,21 +67,49 @@ namespace HasherV2._0
 
         private void button2_Click(object sender, EventArgs e)
         {
-            if(radioButton1.Checked){
-                progressBar1.Value = 0;
-                richTextBox1.Text = "Key: ";
-                richTextBox1.Text += hasher.Hash(textBox1.Text).ToString();
-                richTextBox1.Text += "\n";
-                richTextBox1.Text += "Length: ";
-                richTextBox1.Text += textBox1.Text.Length.ToString();
-                progressBar1.Value = 100;
-            }else if(radioButton2.Checked){
-                progressBar1.Value = 0;
-                //dehash
+            long key;
+            long length;
+            if (radioButton2.Checked)
+            {
+
+                try
+                {
+                    key = Convert.ToInt64(textBox1.Text);
+                    length = Convert.ToInt64(textBox2.Text);
+                }
+                catch (Exception)
+                {
+                    _dialog = new Dialog();
+                    _dialog.Open("Error", "Invalid Input.");
+                    key = 0;
+                    length = 0;
+                }
             }
             else
             {
-                dialog.Open("Error", "Please select either Hash, or De Hash");
+                key = 0;
+                length = 0;
+            }
+
+        var guess = textBox3.Text ?? "";
+            
+            if(radioButton1.Checked){
+                progressBar1.Value = 0;
+                richTextBox1.Text = Resources.MainForm_button2_Click_Key__;
+                richTextBox1.Text += _hasher.Hash(textBox1.Text).ToString(CultureInfo.InvariantCulture);
+                richTextBox1.Text += Resources.MainForm_button2_Click_;
+                richTextBox1.Text += Resources.MainForm_button2_Click_Length__;
+                richTextBox1.Text += textBox1.Text.Length.ToString(CultureInfo.InvariantCulture);
+                progressBar1.Value = 100;
+            }else if(radioButton2.Checked){
+                progressBar1.Value = 0;
+                
+                _deHasher.DeHash(key, length, guess);
+                
+            }
+            else
+            {
+                _dialog.Open("Error", "Please select either Hash, or De Hash");
             }
         }
 
@@ -121,15 +130,20 @@ namespace HasherV2._0
             Save.ShowDialog();
             try
             {
-                System.IO.StreamWriter writer = new System.IO.StreamWriter(fileName);
+                var writer = new System.IO.StreamWriter(_fileName);
                 writer.Write(richTextBox1.Text);
                 writer.Close();
-            }catch(Exception){}
+            }
+            catch (Exception)
+            {
+                _dialog = new Dialog();
+                _dialog.Open("Error", "Oops Somethign went wrong!");
+            }
         }
 
         private void Save_FileOk(object sender, CancelEventArgs e)
         {
-            fileName = Save.FileName;
+            _fileName = Save.FileName;
         }
 
     }

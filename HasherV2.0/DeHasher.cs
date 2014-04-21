@@ -1,35 +1,33 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace HasherV2._0
 {
     class DeHasher
     {
-        String answer;
-        String letters = "acdegilmnoprstuw";
+        String _answer;
+        private const String Letters = "acdegilmnoprstuw";
 
-        public String deHash(long key, long length, String guess)
+        public String DeHash(long key, long length, String guess)
         {
-            int[] phish = new int[length];
+            var phish = new int[length];
             if(guess != null){
-                for (int i = 0; i < length; i++)
+                for (var i = 0; i < length; i++)
                 {
-                    phish[i] = letters.IndexOf(guess[i]);
+                    phish[i] = Letters.IndexOf(guess[i]);
                 }
             }
-            while(phish.Sum(i => i) != phish.Length * letters.Length){
-                var test = String.Join("", phish.Select(i => letters[i].ToString()).ToArray());
-                if(hash(test) == key){
-                    answer = test;
+            while(phish.Sum(i => i) != phish.Length * Letters.Length){
+                var test = String.Join("", phish.Select(i => Letters[i].ToString(CultureInfo.InvariantCulture)).ToArray());
+                if(Hash(test) == key){
+                    _answer = test;
                     break;
                 }
                 phish[phish.Length - 1]++;
-                for (int i = test.Length; i >= 0; i++ )
+                for (var i = test.Length; i >= 0; i++ )
                 {
-                    if(test[i] >= letters.Length){
+                    if(test[i] >= Letters.Length){
                         phish[i] = 0;
                         phish[i - 1]++;
                     }
@@ -40,16 +38,11 @@ namespace HasherV2._0
                 }
                 return null;
             }
-            return answer;
+            return _answer;
         }
-        public int hash(String s)
+        public int Hash(String s)
         {
-            int h = 7;
-            for (int i = 0; i < s.Length; i++)
-            {
-                h = h * 37 + letters.IndexOf(s[i]);
-            }
-            return h;
+            return s.Aggregate(7, (current, t) => current*37 + Letters.IndexOf(t));
         }
     }
 }

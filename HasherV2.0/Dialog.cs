@@ -48,6 +48,7 @@ namespace HasherV2._0
         {
             this.Title = text;
         }
+
         private void button1_Click(object sender, EventArgs e)
         {
             this.Hide();
