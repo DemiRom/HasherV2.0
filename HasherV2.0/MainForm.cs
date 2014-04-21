@@ -17,6 +17,8 @@ namespace HasherV2._0
         HelpDialog helpDialog;
         Dialog dialog;
 
+        String fileName;
+
         public MainForm()
         {
             InitializeComponent();
@@ -35,6 +37,7 @@ namespace HasherV2._0
             textBox2.Enabled = false;
             textBox3.Enabled = false;
             richTextBox1.Enabled = false;
+            button2.Enabled = false;
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -65,6 +68,9 @@ namespace HasherV2._0
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
             textBox2.Enabled = true;
+            if(radioButton1.Checked || radioButton2.Checked){
+                button2.Enabled = true;
+            }
         }
 
         private void openFileDialog1_FileOk(object sender, CancelEventArgs e)
@@ -81,6 +87,7 @@ namespace HasherV2._0
         private void button2_Click(object sender, EventArgs e)
         {
             if(radioButton1.Checked){
+                progressBar1.Value = 0;
                 richTextBox1.Text = "Key: ";
                 richTextBox1.Text += hasher.Hash(textBox1.Text).ToString();
                 richTextBox1.Text += "\n";
@@ -88,12 +95,41 @@ namespace HasherV2._0
                 richTextBox1.Text += textBox1.Text.Length.ToString();
                 progressBar1.Value = 100;
             }else if(radioButton2.Checked){
+                progressBar1.Value = 0;
                 //dehash
             }
             else
             {
                 dialog.Open("Error", "Please select either Hash, or De Hash");
             }
+        }
+
+        private void newToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            
+
+        }
+
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+
+        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Save.FileName = "*.txt";
+            Save.ShowDialog();
+            try
+            {
+                System.IO.StreamWriter writer = new System.IO.StreamWriter(fileName);
+                writer.Write(richTextBox1.Text);
+                writer.Close();
+            }catch(Exception){}
+        }
+
+        private void Save_FileOk(object sender, CancelEventArgs e)
+        {
+            fileName = Save.FileName;
         }
 
     }
